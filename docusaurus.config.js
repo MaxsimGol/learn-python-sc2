@@ -30,6 +30,7 @@ const config = {
   organizationName: 'MaxsimGol', // Usually your GitHub org/user name.
   projectName: 'learn-python-sc2', // Usually your repo name.
   trailingSlash: false,
+  deploymentBranch: 'gh-pages',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
