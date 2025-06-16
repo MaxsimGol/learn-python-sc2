@@ -18,7 +18,15 @@ const config = {
   future: {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
-
+  headTags: [
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'google-site-verification',
+        content: 'Ssfb9WLX16jSFbtw7JFWgG15TJY8nHTLIGt57oR9_uk', // <-- PASTE YOUR CODE HERE
+      },
+    },
+  ],
   // Set the production url of your site here
   url: 'https://MaxsimGol.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
@@ -76,7 +84,7 @@ const config = {
             label: 'Tutorial',
           },
           {
-            href: 'https://github.com/BurnySc2/python-sc2',
+            href: 'https://github.com/MaxsimGol/learn-python-sc2',
             label: 'GitHub',
             position: 'right',
           },
@@ -86,11 +94,11 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: 'Documentation Resources',
             items: [
               {
-                label: 'Tutorial',
-                to: '/docs/Part 1 - Getting Started/Chapter 1 - Introduction/1.1 - What is python-sc2',
+                label: 'BurnySc2/python-sc2',
+                href: 'https://github.com/BurnySc2/python-sc2',
               },
             ],
           },
