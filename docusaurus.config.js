@@ -61,6 +61,10 @@ const config = {
           // Remove this to remove the "edit this page" links.
 
         },
+        gtag: {
+          trackingID: 'G-YY6E18FRKL',
+          anonymizeIP: true,
+        },
         blog: false,
         theme: {
           customCss: './src/css/custom.css',
