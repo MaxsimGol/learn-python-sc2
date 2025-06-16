@@ -3,7 +3,7 @@
 
 # Learn Python-SC2: The Unofficial Documentation
 
-[![Documentation Status](https://img.shields.io/badge/docs-v0.1%20Alpha-orange)](https://maxsimgol.github.io/learn-python-sc2/)
+[![Documentation Status](https://img.shields.io/badge/docs-v0.2%20Alpha-orange)](https://maxsimgol.github.io/learn-python-sc2/)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/maxsimgol/learn-python-sc2/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
