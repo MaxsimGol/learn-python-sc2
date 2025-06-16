@@ -11,7 +11,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'BurnySc2/Python-Sc2 Documentation',
-  tagline: 'The Gemini 2.5 Pro generated guide to BurnySc2/Python-Sc2 and RL (Alpha v0.1). Generated content may contain errors.',
+  tagline: 'The Gemini 2.5 Pro generated guide to BurnySc2/Python-Sc2 and RL (Alpha v0.2). Generated content may contain errors.',
   favicon: 'img/favicon.png',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -103,6 +103,10 @@ const config = {
               {
                 label: 'BurnySc2/python-sc2',
                 href: 'https://github.com/BurnySc2/python-sc2',
+              },
+              {
+                label: 'DLR-RM/stable-baselines3',
+                href: 'https://github.com/DLR-RM/stable-baselines3',
               },
             ],
           },
