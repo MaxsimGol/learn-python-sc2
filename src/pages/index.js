@@ -6,6 +6,7 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
+import Head from '@docusaurus/Head';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -32,8 +33,11 @@ export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title={`${siteConfig.title}`}>
+      {/* 2. USE THE HEAD COMPONENT */}
+      <Head>
+        <meta name="description" content="Welcome to the resource for learning python-sc2. Start your journey building powerful StarCraft II AI bots with our comprehensive tutorials and examples." />
+      </Head>
       <HomepageHeader />
       <main>
         <HomepageFeatures />

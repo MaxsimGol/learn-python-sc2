@@ -76,6 +76,13 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      metadata: [
+        {
+          name: 'description',
+          content: 'The complete guide to building StarCraft II bots with python-sc2. Learn everything from installation and core concepts to advanced AI and reinforcement learning.'
+        },
+        { name: 'keywords', content: 'python-sc2, starcraft II, bot, ai, reinforcement learning, tutorial' },
+      ],
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
