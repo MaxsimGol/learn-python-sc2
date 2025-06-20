@@ -9,13 +9,13 @@ Locating the enemy is your first priority. The library provides several properti
 ```
       THE MAP (e.g., Acropolis LE)
 +------------------------------------+
-| P1 o                               |  P1: A possible starting location
-|(self.game_info.start_locations)    |
+| P1 o                               |  P1: Your bot's actual start
+|(self.start_location)               |
 |                                    |
-|              o P2                  |  P2: Your bot's actual start
-|       (self.start_location)        |
+|                                    |  
 |                                    |
-|                               o P3 |  P3: The enemy's actual start
+|                                    |
+|                               o P3 |  2: The enemy's actual start
 |     (self.enemy_start_locations[0])|
 +------------------------------------+
 ```
@@ -24,7 +24,6 @@ Locating the enemy is your first priority. The library provides several properti
 | :----------------------- | :------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | `self.start_location`    | Your *exact* starting `Point2`.                                      | Finding the center of your own base.                                                   |
 | `self.enemy_start_locations` | A `list` of your opponents' *exact* starting locations.              | **The primary way you find the enemy in a 1v1.**                                       |
-| `self.game_info.start_locations` | A `list` of *all possible* start locations on the map.               | Scouting when you have multiple opponents and don't know where they are.               |
 
 ---
 
@@ -48,7 +47,7 @@ This table details the core components of the battlefield blueprint and their st
 Here is how you should think about using `self.game_info` in your own projects:
 
 -   [ ] **1. Find the Enemy:** Immediately grab `self.enemy_start_locations[0]` to get your primary target.
--   [ ] **2. Plan Expansions:** Find the closest base location in `self.expansion_locations_list` (a helper property) to your `self.start_location`.
+-   [ ] **2. Plan Expansions:** Find the closest base location in `self.expansion_locations_list` (a helper property) to your `self.start_location` or use `self.get_next_expansion()` that finds the closest, unoccupied expansion location to your existing bases.
 -   [ ] **3. Determine Build Patterns:** Use your start location to decide on safe places to build, like placing a Supply Depot behind your mineral line.
 -   [ ] **4. Set Rally Points:** Calculate a safe rally point between your base and the enemy's for newly trained units.
 
@@ -59,8 +58,6 @@ Here is how you should think about using `self.game_info` in your own projects:
 This bot uses `self.game_info` in `on_start` to make several strategic decisions at the very beginning of the game.
 
 ```python
-# strategist_bot.py
-
 # strategist_bot.py
 
 from sc2.main import run_game
@@ -125,3 +122,13 @@ if __name__ == "__main__":
         realtime=True,
     )
 ```
+---
+import ThemeAwareIframe from '@site/src/components/ThemeAwareIframe';
+
+# <p align="center">Interactive Map Demonstration</p>
+
+<ThemeAwareIframe
+  src="/learn-python-sc2/interactive_pages/Part_2_4.1.html"
+  style={{ width: '100%', height: '500px', border: '0' }}
+  title="Theme Aware Interactive Demo"
+/>
