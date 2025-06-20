@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive StarCraft 2 Map Explanation</title>
+    <style>
+        body {
+            margin: 0;
+            /* Ensures there's no outer spacing */
+            padding: 20px 0;
+            /* Adds space only on the top and bottom */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fff;
+            color: #333;
+        }
+
+
+        .content-wrapper {
+            /* This is the classic way to center a block element */
+            margin: 0 auto;
+            /* Set a max-width to prevent it from becoming too wide on large screens */
+            max-width: 650px;
+        }
+
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .map-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            background-color: #8FBC8F;
+            border: 2px solid #556B2F;
+            flex-shrink: 0;
+            box-sizing: content-box;
+        }
+
+        .playable-area {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            right: 40px;
+            bottom: 40px;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            box-sizing: border-box;
+            z-index: 1;
+        }
+
+        .base {
+            position: absolute;
+            background-color: #D2B48C;
+            border: 2px solid #8B4513;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+
+        .player1-base {
+            width: 225px;
+            height: 225px;
+            top: 45px;
+            left: 45px;
+        }
+
+        .player2-base {
+            width: 225px;
+            height: 225px;
+            bottom: 45px;
+            right: 45px;
+        }
+
+        .ramp {
+            position: absolute;
+            background: linear-gradient(45deg, #a08c6e, #bfab8a);
+            border: 1px solid #6b5b42;
+            z-index: 5;
+            width: 80px;
+            height: 40px;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            display: none;
+            grid-template-columns: repeat(var(--grid-cols, 40), 1fr);
+            grid-template-rows: repeat(var(--grid-rows, 40), 1fr);
+            pointer-events: none;
+        }
+
+        .grid-overlay.visible {
+            display: grid;
+        }
+
+        #pathing-grid {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+        }
+
+        .pathing-cell.unpathable {
+            background-color: rgba(255, 0, 0, 0.25);
+            border: 1px solid rgba(255, 0, 0, 0.1);
+        }
+
+        #placement-grid {
+            top: 40px;
+            left: 40px;
+            right: 40px;
+            bottom: 40px;
+            z-index: 3;
+        }
+
+        .placement-cell {
+            background-color: rgba(0, 0, 255, 0.1);
+            /* CORRECTED STYLE */
+            border: 1px solid rgba(0, 0, 255, 0.15);
+        }
+
+        .map-point {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.1s linear;
+        }
+
+        .start-location {
+            background-color: #4169E1;
+        }
+
+        .ramp-top-center {
+            background-color: #FF4500;
+        }
+
+        .target-point {
+            background-color: #32CD32;
+        }
+
+        .line {
+            position: absolute;
+            background-color: black;
+            height: 2px;
+            transform-origin: 0 50%;
+            z-index: 9;
+            opacity: 0.6;
+        }
+
+        .panel {
+            width: 600px;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #005A9C;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+
+        code {
+            background-color: #eef;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            word-break: break-all;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .legend-grid {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            flex-shrink: 0;
+            margin-top: 3px;
+            box-sizing: border-box;
+        }
+
+        .legend-pathing-grid {
+            background-color: rgba(255, 0, 0, 0.25);
+            border: 1px solid rgba(255, 0, 0, 0.1);
+        }
+
+        .legend-placement-grid {
+            background-color: rgba(0, 0, 255, 0.1);
+            border: 1px solid rgba(0, 0, 255, 0.15);
+        }
+
+        /* CORRECTED STYLE */
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        #slider-value {
+            font-weight: bold;
+            color: #005A9C;
+        }
+
+        .map-label {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 6px;
+            font-size: 12px;
+            border-radius: 3px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .map-size-label {
+            top: 5px;
+            right: 5px;
+        }
+
+        .playable-area-label {
+            top: 45px;
+            right: 45px;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .toggle-container:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-knob {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider-knob:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked+.slider-knob {
+            background-color: #005A9C;
+        }
+
+        input:checked+.slider-knob:before {
+            transform: translateX(26px);
+        }
+
+        .slider-knob.round {
+            border-radius: 34px;
+        }
+
+        .slider-knob.round:before {
+            border-radius: 50%;
+        }
+
+        /* --- DARK MODE STYLES --- */
+        /* These styles will be applied when the body has the 'dark' class */
+        body.dark {
+            background-color: #1b1b1d;
+            /* A dark background */
+            color: #e0e0e0;
+            /* A lighter text color */
+        }
+
+        body.dark .panel {
+            background-color: #242526;
+            border: 1px solid #303030;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark h1,
+        body.dark h2,
+        body.dark h3 {
+            color: #00aaff;
+            /* A brighter blue for dark mode */
+            border-bottom-color: #303030;
+        }
+
+        body.dark code {
+            background-color: #333;
+            color: #f0f0f0;
+        }
+
+        body.dark .legend-item {
+            color: #ccc;
+        }
+
+        body.dark #slider-value {
+            color: #00aaff;
+        }
+
+        body.dark .toggle-container {
+            border-top-color: #303030;
+        }
+
+        body.dark .slider-knob {
+            background-color: #555;
+        }
+
+        body.dark input:checked+.slider-knob {
+            background-color: #00aaff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content-wrapper">
+        <div class="container">
+            <div class="map-container" id="map">
+                <div class="playable-area"></div>
+                <div class="grid-overlay" id="placement-grid"></div>
+                <div class="grid-overlay" id="pathing-grid"></div>
+                <div class="map-label map-size-label">Map Size</div>
+                <div class="map-label playable-area-label">Playable Area</div>
+                <div class="base player1-base"></div>
+                <div class="base player2-base"></div>
+                <div class="ramp" id="p1-ramp"></div>
+                <div class="ramp" id="p2-ramp"></div>
+            </div>
+            <div class="panel">
+                <h3>Try it Yourself!</h3>
+                <p>Use the slider to change the distance value in the code below.</p>
+                <input type="range" id="distance-slider" min="-117" max="117" value="-8">
+                <div class="toggle-container">
+                    <label for="pathing-grid-toggle">Show Unpathable Area Grid</label>
+                    <label class="switch">
+                        <input type="checkbox" id="pathing-grid-toggle">
+                        <span class="slider-knob round"></span>
+                    </label>
+                </div>
+                <div class="toggle-container">
+                    <label for="placement-grid-toggle">Show Placement Grid</label>
+                    <label class="switch">
+                        <input type="checkbox" id="placement-grid-toggle">
+                        <span class="slider-knob round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="panel">
+                <h1>Code Explanation</h1>
+                <p>This page demonstrates how bots calculate positions, showing the <strong>map size</strong>,
+                    <strong>playable area</strong>, and toggleable grids for <strong>pathing</strong> and
+                    <strong>placement</strong>.
+                </p>
+                <h2>The Code</h2>
+                <code>self.safe_build_position = self.start_location.towards(self.main_base_ramp.top_center, <span id="slider-value">-8</span>)</code>
+                <h3>Map Legend</h3>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4169E1;"></div>
+                    <div><strong>Start Location</strong><br><code>self.start_location</code></div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF4500;"></div>
+                    <div><strong>Ramp Top Center</strong><br><code>self.main_base_ramp.top_center</code></div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #32CD32;"></div>
+                    <div><strong>Safe Build Position</strong><br><code>self.safe_build_position</code></div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-grid legend-pathing-grid"></div>
+                    <div><strong>Unpathable Grid</strong><br>The <code>pathing_grid</code> shows areas ground units
+                        cannot
+                        enter.</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-grid legend-placement-grid"></div>
+                    <div><strong>Placement Grid</strong><br>The finer <code>placement_grid</code> used for building
+                        construction.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const map = document.getElementById('map');
+        const slider = document.getElementById('distance-slider');
+        const sliderValueDisplay = document.getElementById('slider-value');
+        const p1RampEl = document.getElementById('p1-ramp');
+        const p2RampEl = document.getElementById('p2-ramp');
+        const pathingGridToggle = document.getElementById('pathing-grid-toggle');
+        const placementGridToggle = document.getElementById('placement-grid-toggle');
+        const pathingGridContainer = document.getElementById('pathing-grid');
+        const placementGridContainer = document.getElementById('placement-grid');
+        const mapSize = 600;
+
+        const rampConfig = { width: 80, height: 40, angle: 45 };
+
+        const p1RampCss = { top: 238, left: 238, ...rampConfig };
+        p1RampEl.style.top = `${p1RampCss.top}px`;
+        p1RampEl.style.left = `${p1RampCss.left}px`;
+        p1RampEl.style.transform = `rotate(${p1RampCss.angle}deg)`;
+
+        const p2RampCss = { top: mapSize - p1RampCss.top - p1RampCss.height, left: mapSize - p1RampCss.left - p1RampCss.width, ...rampConfig };
+        p2RampEl.style.top = `${p2RampCss.top}px`;
+        p2RampEl.style.left = `${p2RampCss.left}px`;
+        p2RampEl.style.transform = `rotate(${p2RampCss.angle}deg)`;
+
+        function calculateRampEdgeCenter(css, isPlayerOne) {
+            const pivotX = css.left + css.width / 2;
+            const pivotY = css.top + css.height / 2;
+            const angleRad = css.angle * Math.PI / 180;
+            const localX = isPlayerOne ? -css.width / 2 : css.width / 2;
+            const localY = 0;
+            const rotatedX = localX * Math.cos(angleRad) - localY * Math.sin(angleRad);
+            const rotatedY = localX * Math.sin(angleRad) + localY * Math.cos(angleRad);
+            return { x: pivotX + rotatedX, y: pivotY + rotatedY };
+        }
+
+        const p1 = { start: { x: 157.5, y: 157.5 }, rampTop: calculateRampEdgeCenter(p1RampCss, true) };
+        const p2 = { start: { x: mapSize - p1.start.x, y: mapSize - p1.start.y }, rampTop: calculateRampEdgeCenter(p2RampCss, false) };
+
+        function createPlayerVisuals(positions) {
+            const parent = document.getElementById('map');
+            const startEl = document.createElement('div'); startEl.className = 'map-point start-location'; startEl.style.left = `${positions.start.x}px`; startEl.style.top = `${positions.start.y}px`; parent.appendChild(startEl);
+            const rampEl = document.createElement('div'); rampEl.className = 'map-point ramp-top-center'; rampEl.style.left = `${positions.rampTop.x}px`; rampEl.style.top = `${positions.rampTop.y}px`; parent.appendChild(rampEl);
+            const targetEl = document.createElement('div'); targetEl.className = 'map-point target-point'; parent.appendChild(targetEl);
+            const lineEl = document.createElement('div'); lineEl.className = 'line'; parent.appendChild(lineEl);
+            return { targetEl, lineEl };
+        }
+
+        const p1Visuals = createPlayerVisuals(p1);
+        const p2Visuals = createPlayerVisuals(p2);
+
+        function calculateTowardsPoint(start, target, distance) {
+            const dx = target.x - start.x;
+            const dy = target.y - start.y;
+            const originalDist = Math.sqrt(dx * dx + dy * dy);
+            if (originalDist === 0) return { ...start };
+            const unitX = dx / originalDist;
+            const unitY = dy / originalDist;
+            return { x: start.x + unitX * distance, y: start.y + unitY * distance };
+        }
+
+        function createLine(lineEl, p1, p2) {
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            lineEl.style.width = `${length}px`;
+            lineEl.style.left = `${p1.x}px`;
+            lineEl.style.top = `${p1.y}px`;
+            lineEl.style.transform = `rotate(${angle}deg)`;
+        }
+
+        function updatePositions(distance) {
+            const p1TargetPos = calculateTowardsPoint(p1.start, p1.rampTop, distance);
+            p1Visuals.targetEl.style.left = `${p1TargetPos.x}px`;
+            p1Visuals.targetEl.style.top = `${p1TargetPos.y}px`;
+            createLine(p1Visuals.lineEl, p1.start, p1.rampTop);
+            const p2TargetPos = calculateTowardsPoint(p2.start, p2.rampTop, distance);
+            p2Visuals.targetEl.style.left = `${p2TargetPos.x}px`;
+            p2Visuals.targetEl.style.top = `${p2TargetPos.y}px`;
+            createLine(p2Visuals.lineEl, p2.start, p2.rampTop);
+            sliderValueDisplay.textContent = distance;
+        }
+
+        function createPathingGrid() {
+            const cols = 40, rows = 40;
+            pathingGridContainer.style.setProperty('--grid-cols', cols);
+            pathingGridContainer.style.setProperty('--grid-rows', rows);
+            const baseStartCol = 3, baseStartRow = 3, baseSize = 15;
+            for (let i = 0; i < cols * rows; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'pathing-cell';
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const inP1Base = (col >= baseStartCol && col < baseStartCol + baseSize && row >= baseStartRow && row < baseStartRow + baseSize);
+                const inP2Base = (col >= cols - baseStartCol - baseSize && col < cols - baseStartCol && row >= rows - baseStartRow - baseSize && row < rows - baseStartRow);
+                if (inP1Base || inP2Base) {
+                    cell.classList.add('unpathable');
+                }
+                pathingGridContainer.appendChild(cell);
+            }
+        }
+
+        function createPlacementGrid() {
+            const cols = 65, rows = 65;
+            placementGridContainer.style.setProperty('--grid-cols', cols);
+            placementGridContainer.style.setProperty('--grid-rows', rows);
+            for (let i = 0; i < cols * rows; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'placement-cell';
+                placementGridContainer.appendChild(cell);
+            }
+        }
+
+        slider.addEventListener('input', (e) => {
+            updatePositions(parseInt(e.target.value, 10));
+        });
+
+        pathingGridToggle.addEventListener('change', () => {
+            pathingGridContainer.classList.toggle('visible', pathingGridToggle.checked);
+        });
+
+        placementGridToggle.addEventListener('change', () => {
+            placementGridContainer.classList.toggle('visible', placementGridToggle.checked);
+        });
+
+        updatePositions(parseInt(slider.value, 10));
+        createPathingGrid();
+        createPlacementGrid();
+    </script>
+    <script>
+        /**
+         * A function to apply the theme. It adds or removes the 'dark' class
+         * from the <body> element based on the received theme.
+         * @param {string} theme - The theme name, either 'light' or 'dark'.
+         */
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark');
+            } else {
+                document.body.classList.remove('dark');
+            }
+        }
+
+        /**
+         * The main event listener. It "listens" for messages sent from the parent window.
+         * The parent window is your Docusaurus page.
+         */
+        window.addEventListener('message', (event) => {
+            // Check if the received data has a 'theme' property.
+            if (event.data && event.data.theme) {
+                applyTheme(event.data.theme);
+            }
+        });
+
+        // This line is important. It asks the parent Docusaurus page for the
+        // current theme as soon as the iframe has loaded. This handles the
+        // case where a user opens the page when dark mode is already active.
+        window.parent.postMessage({ 'getDocusaurusTheme': true }, '*');
+    </script>
+    <script>
+        /**
+         * A function that measures the full scroll height of the document
+         * and sends it to the parent Docusaurus page.
+         */
+        const sendHeight = () => {
+            // scrollHeight gives us the total height of the content
+            const height = document.documentElement.scrollHeight;
+            window.parent.postMessage({ height: height }, '*');
+        };
+
+        // Use a ResizeObserver to automatically send the height whenever
+        // the content size changes. This is the most reliable method.
+        const resizeObserver = new ResizeObserver(() => {
+            sendHeight();
+        });
+
+        // Tell the observer to watch the <body> element for size changes.
+        resizeObserver.observe(document.body);
+
+        // Also send the height once when the page initially loads,
+        // just in case the observer is slow to fire.
+        window.addEventListener('load', sendHeight);
+    </script>
+</body>
+
+</html>
