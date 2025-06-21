@@ -16,6 +16,21 @@
             color: #333;
         }
 
+        #bottom-left-base {
+            width: 150px;
+            height: 150px;
+            top: 405px;
+            /* Position from the top edge */
+            left: 45px;
+            /* Position from the left edge */
+        }
+
+        .upland-label {
+            top: 408px;
+            /* (330px base top + 5px margin) */
+            left: 50px;
+            /* (45px base left + 5px margin) */
+        }
 
         .content-wrapper {
             /* This is the classic way to center a block element */
@@ -235,7 +250,7 @@
             padding: 3px 6px;
             font-size: 12px;
             border-radius: 3px;
-            z-index: 1;
+            z-index: 3;
             pointer-events: none;
         }
 
@@ -374,6 +389,10 @@
                 <div class="grid-overlay" id="pathing-grid"></div>
                 <div class="map-label map-size-label">Map Size</div>
                 <div class="map-label playable-area-label">Playable Area</div>
+                <div class="map-label upland-label">Upland</div>
+                <div class="base player1-base"></div>
+                <div class="base player2-base"></div>
+                <div class="base" id="bottom-left-base"></div>
                 <div class="base player1-base"></div>
                 <div class="base player2-base"></div>
                 <div class="ramp" id="p1-ramp"></div>
@@ -517,18 +536,29 @@
         }
 
         function createPathingGrid() {
+            // Define the grid dimensions and properties
             const cols = 40, rows = 40;
+            const baseSize = 10;
+            const marginFromEdge = 3;
+
             pathingGridContainer.style.setProperty('--grid-cols', cols);
             pathingGridContainer.style.setProperty('--grid-rows', rows);
-            const baseStartCol = 3, baseStartRow = 3, baseSize = 15;
+
+            // Calculate the starting coordinates for the bottom-left corner
+            const baseStartCol = marginFromEdge;
+            const baseStartRow = rows - marginFromEdge - baseSize; // The key change is here
+
             for (let i = 0; i < cols * rows; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'pathing-cell';
                 const col = i % cols;
                 const row = Math.floor(i / cols);
+
+                // This calculation now defines a rectangle in the bottom-left
                 const inP1Base = (col >= baseStartCol && col < baseStartCol + baseSize && row >= baseStartRow && row < baseStartRow + baseSize);
-                const inP2Base = (col >= cols - baseStartCol - baseSize && col < cols - baseStartCol && row >= rows - baseStartRow - baseSize && row < rows - baseStartRow);
-                if (inP1Base || inP2Base) {
+
+                // This is the version where P2's grid is already removed
+                if (inP1Base) {
                     cell.classList.add('unpathable');
                 }
                 pathingGridContainer.appendChild(cell);
